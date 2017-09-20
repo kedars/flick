@@ -2,6 +2,7 @@
 
 ## Features
 * Very low-footprint for microcontroller usage scenario
+* No dynamic allocations
 * Portable across Linux and RTOS platforms
 * Supports HTTP/1.1
 * Supports HTTP pipelining (multiple requests on the same socket)
