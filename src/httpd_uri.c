@@ -100,6 +100,5 @@ int httpd_uri(httpd_req_t *req)
 	}
 
  out:
-	/* XXX Cleanup the rest of the body of the request */
 	return OS_SUCCESS;
 }
