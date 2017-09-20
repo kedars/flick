@@ -148,9 +148,9 @@ int httpd_start()
 {
 	int ret;
 
+	httpd_sess_init();
 	ret = othread_create(&hd.hd_td.handle, "httpd", HTTPD_STACK_SIZE,
 			     OS_DEFAULT_PRIORITY, httpd_thread, NULL);
-	httpd_sess_init();
 	return ret;
 }
 
