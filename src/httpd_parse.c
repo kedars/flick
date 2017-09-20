@@ -55,7 +55,7 @@ static int httpd_parse_first_line(httpd_req_t *r, char *buf, int buf_len)
 
 
 	/* Extract URI */
-	if (*current == '\0')
+	if (!current || *current == '\0')
 		return -OS_FAIL;
 	token = strsep(&current, " ");
 	strncpy((char *)r->uri, token, sizeof(r->uri));
