@@ -1,7 +1,7 @@
 # Flick: A tiny web server for embedded systems
 
 ## Features
-* Very low-footprint for microcontroller usage scenario
+* Low-footprint for microcontroller usage scenario
 * No dynamic allocations
 * Portable across Linux and RTOS platforms
 * Supports HTTP/1.1
@@ -47,3 +47,9 @@ int main()
 }
 
 ```
+
+## Give it a spin!
+
+* The API is available at: [include/httpd.h](include/httpd.h)
+* Look at an example: [examples/simple/](examples/simple)
+* Run the tests: [test/](test/)
