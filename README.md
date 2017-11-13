@@ -4,6 +4,8 @@
 * Low-footprint for microcontroller usage scenario
 * No dynamic allocations
 * Portable across Linux and RTOS platforms
+  * Unix (Mac / Linux)
+  * [ESP-32](examples/esp32)
 * Supports HTTP/1.1
 * Registration of URI handlers for GET, PUT and POST requests
 * Supports HTTP pipelining (multiple requests on the same socket)
@@ -53,3 +55,4 @@ int main()
 * The API is available at: [include/httpd.h](include/httpd.h)
 * Look at an example: [examples/simple/](examples/simple)
 * Run the tests: [test/](test/)
+
