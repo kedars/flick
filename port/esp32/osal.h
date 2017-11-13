@@ -6,7 +6,8 @@
 #ifndef _FL_OSAL_H_
 #define _FL_OSAL_H_
 
-#include <pthread.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 #include <unistd.h>
 #include <stdint.h>
 
@@ -16,31 +17,28 @@
 #define OS_SUCCESS 0
 #define OS_FAIL    1
 
-typedef pthread_t othread_t;
+typedef TaskHandle_t othread_t;
 
 #define OS_DEFAULT_PRIORITY 0
 
 static inline int othread_create(othread_t *thread, const char *name, uint16_t stacksize, int prio,
 				 void (*thread_routine)(void *arg), void *arg)
 {
-	pthread_attr_t thread_attr;
-	pthread_attr_init(&thread_attr);
-	pthread_attr_setstacksize(&thread_attr, stacksize);
-
-	/* For Unix, we ignore the priority and name, useful in case of the RTOS */
-
-	return pthread_create(thread, &thread_attr, (void *(*)(void *arg)) thread_routine, arg);
+     int ret = xTaskCreate(thread_routine, name, stacksize, arg, prio, thread);
+     if (ret == pdPASS)
+          return OS_SUCCESS;
+     return OS_FAIL;
 }
 
 /* Only self delete is supported */
 static inline void othread_delete()
 {
-	pthread_exit(NULL);
+     vTaskDelete(xTaskGetCurrentTaskHandle());
 }
 
 static inline void othread_sleep(int msecs)
 {
-	usleep(msecs * 1000);
+     vTaskDelay(msecs/portTICK_RATE_MS);
 }
 
 
