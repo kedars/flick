@@ -12,6 +12,6 @@ int main()
 {
 	printf("Application Entry\n");
 	start_tests();
-	pthread_exit(NULL);
+    othread_delete();
 	return 0;
 }

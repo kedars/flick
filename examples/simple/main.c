@@ -51,6 +51,6 @@ int main()
      /* The httpd_start(), starts a new thread. Make sure the process doesn't
       * terminate killing that thread
       */
-     pthread_exit(NULL);
+     othread_delete();
      return 0;
 }
