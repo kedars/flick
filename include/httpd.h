@@ -266,6 +266,18 @@ int httpd_resp_set_hdr(httpd_req_t *r, const char *field, const char *value);
  */
 int httpd_req_recv(httpd_req_t *r, char *buf, unsigned buf_len);
 
+/** Get the Socket Descriptor from the HTTP request
+ *
+ * This API will return the socket descriptor from the HTTP request. You should
+ * seldom have to use this API.
+ *
+ * \param[in] r The request whose socket descriptor should be found
+ *
+ * \return The socket descriptor for this request
+ * \return error otherwise
+ */
+int httpd_req_to_sockfd(httpd_req_t *r);
+
 /** Helper function for HTTP 404
  *
  * Send HTTP 404 message. If you wish to send additional data in the body of the
@@ -375,6 +387,40 @@ void *httpd_sess_get_ctx(int sockfd);
 int httpd_req_get_url_param(httpd_req_t *r, char *key, char *val, int val_size);
 
 /** End of Request / Response
+ * @}
+ */
+
+/* ************** Group: Work Queue ************** */
+/** @name Work Queue
+ * APIs related to the HTTPD Work Queue
+ * @{
+ */
+
+/** Prototype of the HTTPD work function
+ *
+ * Please refer to httpd_queue_work() for more details.
+ *
+ * \param[in] arg The arguments for this work function
+ */
+typedef void (*httpd_work_fn_t)(void *arg);
+
+/** Execute function in HTTPD's context
+ *
+ * \note For the most part you shouldn't have to use this function. Some
+ * protocols require that the web server generate some asynchronous data and
+ * send it to the persistently opened connection. This facility is for use by
+ * these protocols.
+ *
+ * \param[in] work Pointer to the function to be executed in the HTTPD's context
+ * \param[in] arg Pointer to the arguments that should be passed to this
+ * function
+ *
+ * \return OS_SUCCESS on successfully queueing the work
+ * \return error otherwise
+ */
+int httpd_queue_work(httpd_work_fn_t work, void *arg);
+
+/** End of Group Work Queue
  * @}
  */
 

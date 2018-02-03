@@ -46,6 +46,54 @@ static void httpd_accept_conn(int listen_fd)
 	return;
 }
 
+struct httpd_ctrl_data {
+	enum httpd_ctrl_msg {
+		HTTPD_CTRL_SHUTDOWN,
+		HTTPD_CTRL_WORK,
+	} hc_msg;
+	httpd_work_fn_t hc_work;
+	void *hc_work_arg;
+};
+
+int httpd_queue_work(httpd_work_fn_t work, void *arg)
+{
+	struct httpd_ctrl_data msg;
+	memset(&msg, 0, sizeof(msg));
+	msg.hc_msg = HTTPD_CTRL_WORK;
+	msg.hc_work = work;
+	msg.hc_work_arg = arg;
+	int ret = cs_send_to_ctrl_sock(HTTPD_CTRL_SOCK_PORT, &msg, sizeof(msg));
+	if (ret < 0)
+		return ret;
+	return OS_SUCCESS;
+}
+
+void httpd_process_ctrl_msg(int ctrl_fd)
+{
+	struct httpd_ctrl_data msg;
+	int ret = recv(ctrl_fd, &msg, sizeof(msg), 0);
+	if (ret <= 0)
+		return;
+	if (ret != sizeof(msg))
+		return;
+
+	switch (msg.hc_msg) {
+	case HTTPD_CTRL_WORK:
+		if (msg.hc_work)
+			(*msg.hc_work)(msg.hc_work_arg);
+		break;
+	case HTTPD_CTRL_SHUTDOWN:
+	        {
+			int fd = -1;
+			while( (fd = httpd_sess_iterate(fd)) != -1) {
+				httpd_d("cleaning up socket %d\n", fd);
+				httpd_sess_delete(fd);
+				close(fd);
+			}
+		}
+		break;
+	}
+}
 
 /* Manage in-coming connection or data requests */
 static void httpd_server(int listen_fd, int ctrl_fd)
@@ -70,14 +118,7 @@ static void httpd_server(int listen_fd, int ctrl_fd)
 
 	/* Case0: Do we have a control message? */
 	if (FD_ISSET(ctrl_fd, &read_set)) {
-		/* For now, the only message is shutdown, so don't
-		 * even read it */
-		int fd = -1;
-		while( (fd = httpd_sess_iterate(fd)) != -1) {
-			httpd_d("cleaning up socket %d\n", fd);
-			httpd_sess_delete(fd);
-			close(fd);
-		}
+		httpd_process_ctrl_msg(ctrl_fd);
 	}
 
 	/* Case1: Do we have any activity on the current data
@@ -157,8 +198,10 @@ int httpd_start()
 void httpd_stop()
 {
 	hd.hd_td.halt = true;
-	char *halt_cmd = "halt";
- 	cs_send_to_ctrl_sock(HTTPD_CTRL_SOCK_PORT, halt_cmd, strlen(halt_cmd));
+	struct httpd_ctrl_data msg;
+	memset(&msg, 0, sizeof(msg));
+	msg.hc_msg = HTTPD_CTRL_SHUTDOWN;
+	cs_send_to_ctrl_sock(HTTPD_CTRL_SOCK_PORT, &msg, sizeof(msg));
 
 	/* This isn't the most efficient, eg can use semaphore too,
 	 * but should be ok for most cases where the 'stop' is rare.

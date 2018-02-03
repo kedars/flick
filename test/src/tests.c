@@ -98,6 +98,37 @@ int leftover_data_post_handler(httpd_req_t *req)
 	buf[ret] = '\0';
 	httpd_resp_send(req, buf, strlen(buf));
 	return OS_SUCCESS;
+
+}
+
+int __httpd_send(int sockfd, const char *buf, unsigned buf_len, int flags);
+void generate_async_resp(void *arg)
+{
+	char buf[250];
+	int fd = (int )arg;
+#define HTTPD_HDR_STR      "HTTP/1.1 200 OK\r\n"                   \
+                           "Content-Type: text/html\r\n"           \
+                           "Content-Length: %d\r\n"
+#define STR "Hello Double World!"
+
+	snprintf(buf, sizeof(buf), HTTPD_HDR_STR,
+		 strlen(STR));
+	__httpd_send(fd, buf, strlen(buf), 0);
+	/* Space for sending additional headers based on set_header */
+	__httpd_send(fd, "\r\n", strlen("\r\n"), 0);
+	__httpd_send(fd, STR, strlen(STR), 0);
+}
+
+int async_get_handler(httpd_req_t *req)
+{
+#define STR "Hello World!"
+	httpd_resp_send(req, STR, strlen(STR));
+	/* Also register a HTTPD Work which sends the same data on the same
+	 * socket again
+	 */
+	httpd_queue_work(generate_async_resp, (void *)httpd_req_to_sockfd(req));
+	return OS_SUCCESS;
+#undef STR
 }
 
 
@@ -120,6 +151,9 @@ struct httpd_uri basic_handlers[] = {
 	},
 	{ .uri = "/adder",
 	  .post = adder_post_handler,
+	},
+	{ .uri = "/async_data",
+	  .get = async_get_handler,
 	},
 };
 

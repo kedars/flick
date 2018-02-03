@@ -78,6 +78,12 @@ int httpd_req_recv(httpd_req_t *r, char *buf, unsigned buf_len)
 	return ret;
 }
 
+int httpd_req_to_sockfd(httpd_req_t *r)
+{
+	struct httpd_req_aux *ra = r->aux;
+	return ra->sd->fd;
+}
+
 int __httpd_send(int sockfd, const char *buf, unsigned buf_len, int flags)
 {
 	return send(sockfd, buf, buf_len, flags);

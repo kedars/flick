@@ -59,7 +59,14 @@
 #    - POST on /false_uri with 52  bytes of data (data includes \r\n)
 #      (should return HTTP 404) 
 #    - GET on /hello (should return 'Hello World')
-
+#
+# - Test HTTPd Asynchronous response
+#   - Create a session
+#   - GET on /async_data
+#   - returns 'Hello World!' as a response
+#   - the handler schedules an async response, which generates a second
+#     response 'Hello Double World!'
+#
 
 
 ############# TODO TESTS #############
@@ -324,6 +331,23 @@ def parallel_sessions_adder():
         t[i].close()
     print "Success"
 
+def async_response_test():
+    # Test that an asynchronous work is executed in the HTTPD's context
+    # This is tested by reading two responses over the same session
+    print "[test] Test HTTPD Work Queue (Async response) =>",
+    s = Session(dut, 80)
+
+    s.send_get('/async_data')
+    s.read_resp_hdr()
+    if not test_val("First Response", "Hello World!", s.read_resp_data()):
+        return
+    s.read_resp_hdr()
+    if not test_val("Second Response", "Hello Double World!", s.read_resp_data()):
+        return
+
+    s.close()
+    print "Success"
+
 def leftover_data_test():
     # Leftover data in POST is purged (valid and invalid URIs)
     print "[test] Leftover data in POST is purged (valid and invalid URIs) =>",
@@ -397,6 +421,7 @@ get_false_uri()
 print "### Sessions and Context Tests"
 parallel_sessions_adder()
 leftover_data_test()
+async_response_test()
 # XXX spillover_session(max_sessions)
 
 sys.exit()
