@@ -370,6 +370,16 @@ int httpd_set_recv_override(httpd_req_t *r, httpd_recv_func_t recv_func);
  */
 void *httpd_sess_get_ctx(int sockfd);
 
+/** Trigger an httpd session close externally
+ *
+ * This API should ideally never be required. It should be used only under
+ * special circumstances wherein some application requires to close an httpd
+ * client session asynchronously.
+ *
+ * \param[in] sockfd The socket descriptor of the session to be closed
+ */
+void httpd_trigger_sess_close(int sockfd);
+
 /** Get the query paramaters from URL
  *
  * This API can be used to get the various paramaters (name=value pairs)

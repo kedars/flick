@@ -135,3 +135,19 @@ int httpd_sess_iterate(int start_fd)
 	return -1;
 }
 
+static void httpd_sess_close(void *arg)
+{
+	struct sock_db *sock_db = (struct sock_db *)arg;
+	if (sock_db) {
+		int fd = sock_db->fd;
+		httpd_sess_delete(fd);
+		close(fd);
+	}
+}
+
+void httpd_trigger_sess_close(int sockfd)
+{
+	struct sock_db *sock_db = httpd_sess_get(sockfd);
+	if (sock_db)
+		httpd_queue_work(httpd_sess_close, sock_db);
+}
