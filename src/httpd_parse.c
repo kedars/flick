@@ -20,8 +20,7 @@ static int httpd_parse_hdr_field(httpd_req_t *r,
 		char *p = buf + strlen(HDR_CONTENT_LEN);
 		char *endptr;
 		r->content_len = strtol(p, &endptr, 10);
-		if (*endptr != '\0' ||
-		    r->content_len == 0)
+		if (*endptr != '\0')
 			return -OS_FAIL;
 		ra->remaining_len = r->content_len;
 	}
