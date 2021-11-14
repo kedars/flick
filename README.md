@@ -1,5 +1,8 @@
 # Flick: A tiny web server for embedded systems
 
+# Note: 
+This http server has now been merged into [ESP-IDF](https://github.com/espressif/esp-idf/tree/v4.3.1/components/esp_http_server). Subsequent development/enhancements have happened to it in the ESP-IDF component. This repository is still functional, and can be used for Linux/Embedded-Development.
+
 ## Features
 * Low-footprint for microcontroller usage scenario
 * No dynamic allocations
